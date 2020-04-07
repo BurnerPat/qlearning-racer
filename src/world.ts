@@ -1,6 +1,8 @@
 import Agent from "./agent";
 import Vector from "./vector";
 
+import * as track from "./assets/track.svg";
+
 export default class World {
     public agent: Agent;
 
@@ -8,6 +10,7 @@ export default class World {
 
     public constructor(size: Vector) {
         this.size = size;
+        track.default;
     }
 
     public update(): void {
