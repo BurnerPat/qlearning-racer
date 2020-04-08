@@ -28,13 +28,8 @@ export default class Renderer {
     private render(sketch: P5): void {
         sketch.background("#e0e0e0");
 
-        const entities = [this.simulation.world.agent];
-
-        for (const entity of entities) {
-            sketch.push();
-            sketch.translate(entity.position.x, entity.position.y);
-            entity.render(sketch);
-            sketch.pop();
-        }
+        sketch.push();
+        this.simulation.world.render(sketch);
+        sketch.pop();
     }
 }

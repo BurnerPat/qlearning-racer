@@ -15,6 +15,11 @@ export default class Simulation {
 
     public populate(brain: Brain): void {
         this.world.agent = new Agent(this.world.size.multiply(0.5), brain);
+
+        brain.agent = this.world.agent;
+        brain.world = this.world;
+
+        this.world.reset();
     }
 
     public step(): void {

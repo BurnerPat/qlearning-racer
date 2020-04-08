@@ -21,6 +21,18 @@ export default class Vector {
         return new Vector(this.x * factor, this.y * factor);
     }
 
+    public divide(divisor: number): Vector {
+        return new Vector(this.x / divisor, this.y / divisor);
+    }
+
+    public dot(other: Vector): number {
+        return this.x * other.x + this.y * other.y;
+    }
+
+    public cross(other: Vector): number {
+        return this.x * other.y - this.y * other.x;
+    }
+
     public distanceSquared(other: Vector): number {
         return this.subtract(other).lengthSquared;
     }
@@ -42,11 +54,11 @@ export default class Vector {
     }
 
     public resize(length: number): Vector {
-        return Vector.createFromRadial(this.angle, length);
+        return this.divide(this.length).multiply(length);
     }
 
-    public resizeMax(length: number): Vector {
-        return this.resize((Math.min(this.length, length)));
+    public limit(max: number): Vector {
+        return this.resize(Math.min(this.length, max));
     }
 
     public min(range: Vector): Vector {

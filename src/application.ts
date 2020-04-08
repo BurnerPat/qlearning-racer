@@ -4,7 +4,8 @@ import World from "./world";
 import Vector from "./vector";
 import Config from "./config";
 import Renderer from "./renderer";
-import ControlBrain from "./algorithm/control_brain";
+import NnBrain from "./algorithm/nnbrain";
+import ControlBrain from "./algorithm/controlbrain";
 
 export default class Application {
     private readonly simulation: Simulation;
@@ -22,7 +23,9 @@ export default class Application {
         const renderer = new Renderer(this.simulation);
         renderer.setup(this.container);
 
-        this.simulation.populate(new ControlBrain(this.simulation.world.agent, renderer.p5));
+        this.simulation.populate(new ControlBrain(renderer.p5));
+        //this.simulation.populate(new NnBrain());
+
         this.startSimulation();
     }
 

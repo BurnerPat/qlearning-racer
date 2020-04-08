@@ -6,9 +6,9 @@ import Brain from "./algorithm/brain";
 import * as P5 from "p5";
 
 export default class Agent {
-    private angle: number = 0;
+    public angle: number = 0;
 
-    private steer: number = 0;
+    public steer: number = 0;
 
     public position: Vector = new Vector();
 
@@ -38,13 +38,13 @@ export default class Agent {
         this.steer = -weight(this.brain.left) * steeringFactor + weight(this.brain.right) * steeringFactor;
         this.angle += this.steer;
 
-        const accelerationFactor = 1.5;
+        const accelerationFactor = 0.5;
 
         this.force = Vector.createFromRadial(this.angle, weight(this.brain.accelerate) * accelerationFactor);
-        this.movement = this.movement.add(this.force).multiply(0.925);
+        this.movement = this.movement.add(this.force).multiply(0.95);
 
         if (this.brain.brake) {
-            this.movement = this.movement.multiply(0.5);
+            this.movement = this.movement.multiply(0.75);
         }
 
         this.position = this.position.add(this.movement);
@@ -61,10 +61,10 @@ export default class Agent {
     public render(sketch: P5): void {
         sketch.rotate(this.angle);
 
-        const width = 50;
-        const height = 100;
-        const wheelWidth = 10;
-        const wheelHeight = 20;
+        const width = 15;
+        const height = 2 * width;
+        const wheelWidth = width / 5;
+        const wheelHeight = height / 5;
 
         sketch.noStroke();
 
