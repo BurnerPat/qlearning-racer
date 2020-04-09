@@ -94,28 +94,43 @@ export default abstract class Brain {
         let result = 1;
 
         for (let i = 0; i < segments.length - 1; i++) {
-            const intersect = ExMath.lineIntersection(
+            const end = this.agent.position.add(sensor.vector);
+
+            let intersect = ExMath.lineIntersection(
                 this.agent.position,
-                sensor.vector,
+                end,
                 segments[i].edge1,
                 segments[i + 1].edge1
             );
 
-            result = Math.min(result, intersect === false ? 1 : Number(intersect));
+            if (intersect === false) {
+                intersect = ExMath.lineIntersection(
+                    this.agent.position,
+                    end,
+                    segments[i].edge2,
+                    segments[i + 1].edge2
+                );
+
+                if (intersect === false) {
+                    intersect = 1;
+                }
+            }
+
+            result = Math.min(result, <number>intersect);
         }
 
         return result;
     }
 
     private createSensors(max: number): Sensor[] {
-        const x = this.agent.angle;
+        const a = this.agent.angle;
 
         return [
-            Vector.createFromRadial(x, max),
-            Vector.createFromRadial(x - Math.PI / 4, max),
-            Vector.createFromRadial(x + Math.PI / 4, max),
-            Vector.createFromRadial(x - Math.PI / 8, max),
-            Vector.createFromRadial(x + Math.PI / 8, max),
+            Vector.createFromRadial(a, max),
+            Vector.createFromRadial(a - Math.PI / 4, max),
+            Vector.createFromRadial(a + Math.PI / 4, max),
+            Vector.createFromRadial(a - Math.PI / 8, max),
+            Vector.createFromRadial(a + Math.PI / 8, max),
         ].map(v => new Sensor(v));
     }
 
@@ -132,6 +147,9 @@ export default abstract class Brain {
         output(this.left, Brain.OUTPUT_IDX_LEFT, -this._output[2], 0);
         output(this.right, Brain.OUTPUT_IDX_RIGHT, this._output[3], 0);
 
+        sketch.push();
+        sketch.rotate(-this.agent.angle);
+
         for (const sensor of this._sensors) {
             sketch.strokeWeight(1);
             sketch.stroke("#18ffff");
@@ -139,8 +157,10 @@ export default abstract class Brain {
 
             const v = sensor.vector.multiply(sensor.value);
             sketch.strokeWeight(2);
-            sketch.stroke("#448aff");
+            sketch.stroke("#e040fb");
             sketch.line(0, 0, v.x, v.y);
         }
+
+        sketch.pop();
     }
 }

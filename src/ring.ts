@@ -20,4 +20,8 @@ export default class Ring<T> implements Iterable<T> {
     [Symbol.iterator](): Iterator<T> {
         return this.array[Symbol.iterator]();
     }
+
+    public unwrap(): T[] {
+        return this.array;
+    }
 }

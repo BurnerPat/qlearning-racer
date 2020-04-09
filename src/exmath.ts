@@ -21,7 +21,7 @@ export default class ExMath {
         const s = d.subtract(c);
 
         const x = r.cross(s);
-        const y = b.subtract(a);
+        const y = c.subtract(a);
 
         const t = y.cross(s) / x;
         const u = y.cross(r) / x;

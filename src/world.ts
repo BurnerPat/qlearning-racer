@@ -153,8 +153,12 @@ export default class World {
         return ExMath.inQuad(this.agent.position, s.edge1, n.edge1, n.edge2, s.edge2);
     }
 
+    public getAllSegments(): Segment[] {
+        return this.track.unwrap();
+    }
+
     public getSegments(distance: number): Segment[] {
-        return [this.segment].concat(this.getSegmentsInternal(distance, 1), this.getSegmentsInternal(distance, -1));
+        return this.getSegmentsInternal(distance, -1).concat([this.segment], this.getSegmentsInternal(distance, 1));
     }
 
     private getSegmentsInternal(distance: number, direction: number): Segment[] {
@@ -166,13 +170,22 @@ export default class World {
         let last = this.segment;
         let total = 0;
 
+        let first = true;
+
         do {
             i += direction;
 
             const segment = this.track.get(i);
             segments.push(segment);
 
-            total += segment.point.subtract(last.point).lengthSquared;
+            if (!first) {
+                total += segment.point.subtract(last.point).lengthSquared;
+            }
+            else {
+                first = false;
+            }
+
+            last = segment;
         } while (total <= max);
 
         return segments;
@@ -190,6 +203,14 @@ export default class World {
             sketch.noStroke();
             sketch.fill(s1 == this.segment ? "green" : "gray");
             sketch.quad(s1.edge1.x, s1.edge1.y, s2.edge1.x, s2.edge1.y, s2.edge2.x, s2.edge2.y, s1.edge2.x, s1.edge2.y);
+
+            sketch.strokeWeight(2);
+
+            sketch.stroke("#827717");
+            sketch.line(s1.edge1.x, s1.edge1.y, s2.edge1.x, s2.edge1.y);
+
+            sketch.stroke("#1b5e20");
+            sketch.line(s1.edge2.x, s1.edge2.y, s2.edge2.x, s2.edge2.y);
         }
 
         sketch.push();
