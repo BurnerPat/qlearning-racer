@@ -32,7 +32,7 @@ export default abstract class Brain {
             return;
         }
 
-        const range = 150;
+        const range = 400;
 
         this._sensors = this.createSensors(range);
         this.findIntersections(range);
@@ -122,15 +122,15 @@ export default abstract class Brain {
         return result;
     }
 
-    private createSensors(max: number): Sensor[] {
+    private createSensors(length: number): Sensor[] {
         const a = this.agent.angle;
 
         return [
-            Vector.createFromRadial(a, max),
-            Vector.createFromRadial(a - Math.PI / 4, max),
-            Vector.createFromRadial(a + Math.PI / 4, max),
-            Vector.createFromRadial(a - Math.PI / 8, max),
-            Vector.createFromRadial(a + Math.PI / 8, max),
+            Vector.createFromRadial(a, length),
+            Vector.createFromRadial(a - Math.PI / 8, length / 2),
+            Vector.createFromRadial(a + Math.PI / 8, length / 2),
+            Vector.createFromRadial(a - Math.PI / 4, length / 4),
+            Vector.createFromRadial(a + Math.PI / 4, length / 4),
         ].map(v => new Sensor(v));
     }
 

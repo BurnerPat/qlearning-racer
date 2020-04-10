@@ -158,7 +158,7 @@ export default class World {
     }
 
     public getSegments(distance: number): Segment[] {
-        return this.getSegmentsInternal(distance, -1).concat([this.segment], this.getSegmentsInternal(distance, 1));
+        return this.getSegmentsInternal(distance, -1).reverse().concat([this.segment], this.getSegmentsInternal(distance, 1));
     }
 
     private getSegmentsInternal(distance: number, direction: number): Segment[] {

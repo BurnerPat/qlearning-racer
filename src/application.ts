@@ -23,8 +23,8 @@ export default class Application {
         const renderer = new Renderer(this.simulation);
         renderer.setup(this.container);
 
-        //this.simulation.populate(new ControlBrain(renderer.p5));
-        this.simulation.populate(new NnBrain());
+        this.simulation.populate(new ControlBrain(renderer.p5));
+        //this.simulation.populate(new NnBrain());
 
         this.startSimulation();
     }
