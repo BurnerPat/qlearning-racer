@@ -12,16 +12,20 @@ export default class NnBrain extends Brain {
             layers: [
                 tf.layers.dense({
                     units: 10,
-                    inputShape: [Brain.SENSOR_COUNT]
+                    inputShape: [Brain.SENSOR_COUNT],
+                    activation: "linear"
                 }),
                 tf.layers.dense({
-                    units: 10
+                    units: 10,
+                    activation: "linear"
                 }),
                 tf.layers.dense({
-                    units: 10
+                    units: 10,
+                    activation: "linear"
                 }),
                 tf.layers.dense({
-                    units: Brain.OUTPUT_COUNT
+                    units: Brain.OUTPUT_COUNT,
+                    activation: "linear"
                 })
             ]
         });

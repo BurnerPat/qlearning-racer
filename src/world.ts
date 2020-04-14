@@ -55,7 +55,9 @@ export default class World {
         parts[0] = parts[0].replace(/^M/, "");
         parts[parts.length - 1] = parts[parts.length - 1].replace(/Z$/, "");
 
-        for (const part of parts) {
+        for (let i = 0; i < parts.length - 1; i++){
+            let part = parts[i];
+
             const [x, y] = part.split(",").map(Number);
 
             if (isNaN(x) || isNaN(y)) {

@@ -23,9 +23,14 @@ const application = new Application(document.body, {
 
     qlearning: {
         explorationProbability: 0.05,
-        replayBatchSize: 20,
+        replayBatchSize: 100,
         replayMemorySize: 1000,
-        futureRewardDiscountFactor: 0.5
+        futureRewardDiscountFactor: 0.5,
+
+        terminalStatePenalty: -1,
+        backwardProgressPenalty: -1,
+        noProgressPenalty: 0,
+        progressReward: 1
     }
 });
 

@@ -11,12 +11,13 @@ import ExMath from "../exmath";
  */
 
 export interface QLearningConfig {
+    terminalStatePenalty: number;
+    noProgressPenalty: number;
+    backwardProgressPenalty: number;
+    progressReward: number;
     explorationProbability: number;
-
     futureRewardDiscountFactor: number;
-
     replayBatchSize: number;
-
     replayMemorySize: number;
 }
 
@@ -38,10 +39,17 @@ export default class QLearning {
     }
 
     public observe(s: number[], a: number, r: number, ss: number[], terminal: boolean): void {
-        this._experience.push(new QEntry(s, a, terminal ? r : -1, ss, terminal));
+        if (terminal) {
+            r = this.config.terminalStatePenalty;
+        }
+        else {
+            r = [this.config.backwardProgressPenalty, this.config.noProgressPenalty, this.config.progressReward][r + 1];
+        }
+
+        this._experience.push(new QEntry(s, a, r, ss, terminal));
 
         if (this._experience.length > this.config.replayMemorySize) {
-            this._experience.splice(Math.floor(Math.random() * (this._experience.length - 1)), 1);
+            this._experience.splice(0, 1);
         }
     }
 
@@ -62,19 +70,21 @@ export default class QLearning {
         const output: number[][] = [];
 
         for (const sample of batch) {
-            let t = sample.r;
             const q = brain.think(sample.s);
+            const qq = brain.think(sample.ss);
 
-            if (!sample.terminal) {
-                t += this.config.futureRewardDiscountFactor * Math.max(...q);
-            }
+            const t = sample.r + this.config.futureRewardDiscountFactor * Math.max(...qq);
 
-            q[ExMath.argmax(q)] = t;
+            q[sample.a] = t;
 
             input.push(sample.s);
             output.push(q);
         }
 
         await brain.train(input, output);
+    }
+
+    public reset(): void {
+        this._experience = [];
     }
 }

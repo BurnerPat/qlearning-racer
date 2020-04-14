@@ -64,7 +64,7 @@ export default class Simulation {
         await this.learning.train(this.brain);
 
         if (this.world.terminal) {
-            this.world.reset();
+            this.reset();
         }
     }
 }
