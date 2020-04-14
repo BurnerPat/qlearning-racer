@@ -63,16 +63,19 @@ export default abstract class Brain {
     public async abstract train(input: number[][], output: number[][]): Promise<void>;
 
     public render(agent: Agent, sketch: Sketch): void {
-        const output = (decision: boolean, idx: number, x: number, y: number) => {
+        const output = this._output;
+        const max = Math.max(...output) || 1;
+
+        const draw = (decision: boolean, idx: number, x: number, y: number) => {
             sketch.p5.stroke(decision ? "#64dd17" : "#ff6d00");
-            sketch.p5.line(0, 0, 100 * y, 100 * x);
+            sketch.p5.line(0, 0, 100 * (y / max), 100 * (x / max));
         };
 
         sketch.p5.strokeWeight(1);
 
-        output(this.accelerate, Brain.OUTPUT_IDX_ACCELERATE, 0, this._output[0]);
-        output(this.brake, Brain.OUTPUT_IDX_BRAKE, 0, -this._output[1]);
-        output(this.left, Brain.OUTPUT_IDX_LEFT, -this._output[2], 0);
-        output(this.right, Brain.OUTPUT_IDX_RIGHT, this._output[3], 0);
+        draw(this.accelerate, Brain.OUTPUT_IDX_ACCELERATE, 0, output[0]);
+        draw(this.brake, Brain.OUTPUT_IDX_BRAKE, 0, -output[1]);
+        draw(this.left, Brain.OUTPUT_IDX_LEFT, -output[2], 0);
+        draw(this.right, Brain.OUTPUT_IDX_RIGHT, output[3], 0);
     }
 }
