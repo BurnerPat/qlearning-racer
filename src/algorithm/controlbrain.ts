@@ -1,22 +1,23 @@
 import Brain from "./brain";
 
 import * as P5 from "p5";
+import Keyboard from "../keyboard";
 
 export default class ControlBrain extends Brain {
-    private readonly sketch: P5;
-
-    constructor(sketch: P5) {
+    constructor(private readonly keyboard: Keyboard) {
         super();
-
-        this.sketch = sketch;
     }
 
-    protected think(): number[] {
-        return [
-            this.sketch.keyIsDown(this.sketch.UP_ARROW) ? 1 : 0,
-            this.sketch.keyIsDown(this.sketch.DOWN_ARROW) ? 1 : 0,
-            this.sketch.keyIsDown(this.sketch.LEFT_ARROW) ? 1 : 0,
-            this.sketch.keyIsDown(this.sketch.RIGHT_ARROW) ? 1 : 0
-        ];
+    protected thinkInternal(): number[] {
+        const up = this.keyboard.upArrow;
+        const left = this.keyboard.leftArrow;
+        const right = this.keyboard.rightArrow;
+        const down = this.keyboard.downArrow;
+
+        return [up, up && left, up && right, !up && left, !up && right, down].map(e => e ? 1 : 0);
+    }
+
+    public async train(input: number[][], output: number[][]): Promise<void> {
+        // stupid brain ain't gonna learn
     }
 }

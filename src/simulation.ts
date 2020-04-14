@@ -1,28 +1,70 @@
 import World from "./world";
 import Agent from "./agent";
+import Config from "./config";
 
-import Evolution from "./algorithm/evolution";
 import Brain from "./algorithm/brain";
+import ControlBrain from "./algorithm/controlbrain";
+import Application from "./application";
+import NnBrain from "./algorithm/nnbrain";
+import QLearning from "./algorithm/qlearning";
+import ExMath from "./exmath";
+
+export interface SimulationConfig {
+    tickRate: number;
+
+    useControlBrain: boolean;
+}
 
 export default class Simulation {
-    public readonly world: World;
-    public readonly evolution: Evolution;
+    public world: World;
 
-    public constructor(world: World, evolution: Evolution) {
-        this.world = world;
-        this.evolution = evolution;
+    public agent: Agent;
+
+    public brain: Brain;
+
+    private learning: QLearning;
+
+    public constructor(private readonly config: Config) {
+        // Empty
     }
 
-    public populate(brain: Brain): void {
-        this.world.agent = new Agent(this.world.size.multiply(0.5), brain);
+    public initialize(application: Application): void {
+        if (this.config.simulation.useControlBrain) {
+            this.brain = new ControlBrain(application.keyboard);
+        }
+        else {
+            this.brain = new NnBrain();
+        }
 
-        brain.agent = this.world.agent;
-        brain.world = this.world;
+        this.learning = new QLearning(this.config.qlearning);
 
+        this.agent = new Agent(this.config.agent);
+        this.world = new World(this.config.world, this.agent);
+
+        this.world.reset();
+
+        // We need to make an initial observation of the world for QLearning to work
+        this.agent.observe(this.world);
+    }
+
+    public reset(): void {
         this.world.reset();
     }
 
-    public step(): void {
+    public async step(): Promise<void> {
+        const state = this.agent.state;
+        this.learning.decide(this.brain, state);
+
+        this.agent.apply(this.brain);
         this.world.update();
+
+        this.agent.observe(this.world);
+
+        this.learning.observe(state, ExMath.argmax(this.brain.output), this.world.progress, this.agent.state, this.world.terminal);
+        await this.learning.train(this.brain);
+
+        if (this.world.terminal) {
+            this.world.reset();
+        }
     }
 }

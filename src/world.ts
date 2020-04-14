@@ -1,15 +1,19 @@
 import Agent from "./agent";
 import Vector from "./vector";
 import Ring from "./ring";
+import ExMath from "./exmath";
+import Sketch from "./sketch";
 
 import trackData from "./assets/track.svg";
 
-import * as P5 from "p5";
-import ExMath from "./exmath";
+export interface WorldConfig {
+    width: number;
+    height: number;
+}
 
 export class Segment {
     constructor(public readonly index: number, public readonly point: Vector) {
-
+        // Empty
     }
 
     public edge1: Vector;
@@ -18,16 +22,22 @@ export class Segment {
 }
 
 export default class World {
-    public agent: Agent;
-
     private track: Ring<Segment>;
 
     private segment: Segment;
 
     public readonly size: Vector;
 
-    public constructor(size: Vector) {
-        this.size = size;
+    private maxSegmentCounter: number = 0;
+
+    private segmentCounter: number = 0;
+
+    public progress: number = 0;
+
+    public terminal: boolean = false;
+
+    public constructor(private readonly config: WorldConfig, private readonly agent: Agent) {
+        this.size = new Vector(config.width, config.height);
 
         this.loadTrack();
     }
@@ -38,7 +48,7 @@ export default class World {
         const parser = new DOMParser();
         const svg = parser.parseFromString(trackData,"image/svg+xml");
 
-        const path = svg.getElementById("track");
+        const path = svg.getElementsByTagName("path")[0];
         const data = path.getAttribute("d");
 
         const parts = data.split(/L/g);
@@ -116,10 +126,17 @@ export default class World {
 
         this.agent.position = v1.add(d);
         this.agent.angle = d.angle;
+
+        this.progress = 0;
+        this.terminal = false;
     }
 
     public update(): void {
-        this.agent.update(this);
+        if (this.terminal) {
+            return;
+        }
+
+        this.agent.update();
 
         this.checkAgentCollision();
 
@@ -135,15 +152,16 @@ export default class World {
                 const previous = this.track.get(this.segment.index - 1);
 
                 if (!this.checkAgentInSegment(previous)) {
-                    // ded
-                    this.reset();
+                    this.terminal = true;
                 }
                 else {
                     this.segment = previous;
+                    this.progress = -1;
                 }
             }
             else {
                 this.segment = next;
+                this.progress = 1;
             }
         }
     }
@@ -151,10 +169,6 @@ export default class World {
     private checkAgentInSegment(s: Segment): boolean {
         const n = this.track.get(s.index + 1);
         return ExMath.inQuad(this.agent.position, s.edge1, n.edge1, n.edge2, s.edge2);
-    }
-
-    public getAllSegments(): Segment[] {
-        return this.track.unwrap();
     }
 
     public getSegments(distance: number): Segment[] {
@@ -191,31 +205,26 @@ export default class World {
         return segments;
     }
 
-    public render(sketch: P5): void {
+    public render(sketch: Sketch): void {
         for (let i = 0; i < this.track.length; i++) {
             const s1 = this.track.get(i);
             const s2 = this.track.get(i + 1);
 
-            sketch.stroke("black");
-            sketch.strokeWeight(1);
-            sketch.line(s1.point.x, s1.point.y, s2.point.x, s2.point.y);
+            sketch.p5.stroke("black");
+            sketch.p5.strokeWeight(1);
+            sketch.line(s1.point, s2.point);
 
-            sketch.noStroke();
-            sketch.fill(s1 == this.segment ? "green" : "gray");
-            sketch.quad(s1.edge1.x, s1.edge1.y, s2.edge1.x, s2.edge1.y, s2.edge2.x, s2.edge2.y, s1.edge2.x, s1.edge2.y);
+            sketch.p5.noStroke();
+            sketch.p5.fill(s1 == this.segment ? "green" : "gray");
+            sketch.quad(s1.edge1, s2.edge1, s2.edge2, s1.edge2);
 
-            sketch.strokeWeight(2);
+            sketch.p5.strokeWeight(2);
 
-            sketch.stroke("#827717");
-            sketch.line(s1.edge1.x, s1.edge1.y, s2.edge1.x, s2.edge1.y);
+            sketch.p5.stroke("#827717");
+            sketch.line(s1.edge1, s2.edge1);
 
-            sketch.stroke("#1b5e20");
-            sketch.line(s1.edge2.x, s1.edge2.y, s2.edge2.x, s2.edge2.y);
+            sketch.p5.stroke("#1b5e20");
+            sketch.line(s1.edge2, s2.edge2);
         }
-
-        sketch.push();
-        sketch.translate(this.agent.position.x, this.agent.position.y);
-        this.agent.render(sketch);
-        sketch.pop();
     }
 }

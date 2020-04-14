@@ -12,7 +12,7 @@ export default class NnBrain extends Brain {
             layers: [
                 tf.layers.dense({
                     units: 10,
-                    inputShape: [5]
+                    inputShape: [Brain.SENSOR_COUNT]
                 }),
                 tf.layers.dense({
                     units: 10
@@ -21,18 +21,27 @@ export default class NnBrain extends Brain {
                     units: 10
                 }),
                 tf.layers.dense({
-                    units: 4
+                    units: Brain.OUTPUT_COUNT
                 })
             ]
         });
+
+        this.model.compile({
+            optimizer: "sgd",
+            loss: "meanSquaredError"
+        });
     }
 
-    protected think(): number[] {
+    protected thinkInternal(input: number[]): number[] {
         const output = tf.tidy(() => {
-            const input = tf.tensor2d([this.sensors.map(e => e.value)]);
-            return <tf.Tensor>this.model.predict(input);
+            const tensor = tf.tensor2d([input]);
+            return <tf.Tensor>this.model.predict(tensor);
         });
 
         return Array.from(output.dataSync());
+    }
+
+    public async train(input: number[][], output: number[][]): Promise<void> {
+        await this.model.fit(tf.tensor2d(input), tf.tensor2d(output));
     }
 }

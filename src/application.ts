@@ -1,21 +1,17 @@
 import Simulation from "./simulation";
-import Evolution from "./algorithm/evolution";
-import World from "./world";
-import Vector from "./vector";
 import Config from "./config";
 import Renderer from "./renderer";
-import NnBrain from "./algorithm/nnbrain";
-import ControlBrain from "./algorithm/controlbrain";
+import Keyboard from "./keyboard";
 
 export default class Application {
     private readonly simulation: Simulation;
 
     private readonly container: HTMLElement;
 
-    public constructor(container: HTMLElement, width: number, height: number) {
-        const world = new World(new Vector(width, height));
-        this.simulation = new Simulation(world, new Evolution());
+    private _keyboard: Keyboard;
 
+    public constructor(container: HTMLElement, private readonly config: Config) {
+        this.simulation = new Simulation(config);
         this.container = container;
     }
 
@@ -23,15 +19,24 @@ export default class Application {
         const renderer = new Renderer(this.simulation);
         renderer.setup(this.container);
 
-        this.simulation.populate(new ControlBrain(renderer.p5));
-        //this.simulation.populate(new NnBrain());
+        this._keyboard = new Keyboard(renderer.p5);
 
+        this.simulation.initialize(this);
         this.startSimulation();
     }
 
+    public get keyboard(): Keyboard {
+        return this._keyboard;
+    }
+
     private startSimulation(): void {
-        let handle = window.setInterval(() => {
-            this.simulation.step();
-        }, 1000 / Config.TICK_RATE_SIMULATION);
+        const timeout = 1000 / this.config.simulation.tickRate;
+
+        const callback = async () => {
+            await this.simulation.step();
+            window.setTimeout(callback, timeout)
+        };
+
+        window.setTimeout(callback, timeout);
     }
 }

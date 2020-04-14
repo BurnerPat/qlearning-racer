@@ -10,7 +10,7 @@ module.exports = {
     plugins: [
         new CleanPlugin.CleanWebpackPlugin(),
         new HtmlPlugin({
-            title: "Corona",
+            title: "QLearning Racer",
             template: "./src/assets/index.html"
         }),
         new CopyPlugin([

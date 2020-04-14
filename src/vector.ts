@@ -69,6 +69,10 @@ export default class Vector {
         return new Vector(Math.max(this.x, range.x), Math.max(this.y, range.y));
     }
 
+    public negate(): Vector {
+        return this.multiply(-1);
+    }
+
     public rotate(angle: number): Vector {
         const sin = Math.sin(angle);
         const cos = Math.cos(angle);

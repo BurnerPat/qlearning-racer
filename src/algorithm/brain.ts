@@ -1,166 +1,78 @@
-import * as P5 from "p5";
-
 import Agent from "../agent";
-import World, {Segment} from "../world";
-import Vector from "../vector";
 import ExMath from "../exmath";
-
-class Sensor {
-    public value: number = 0;
-
-    constructor(public readonly vector: Vector) {
-
-    }
-}
+import Sketch from "../sketch";
 
 export default abstract class Brain {
     public static readonly OUTPUT_IDX_ACCELERATE = 0;
-    public static readonly OUTPUT_IDX_BRAKE = 1;
-    public static readonly OUTPUT_IDX_LEFT = 2;
-    public static readonly OUTPUT_IDX_RIGHT = 3;
+    public static readonly OUTPUT_IDX_ACCELERATE_LEFT = 1;
+    public static readonly OUTPUT_IDX_ACCELERATE_RIGHT = 2;
+    public static readonly OUTPUT_IDX_LEFT = 3;
+    public static readonly OUTPUT_IDX_RIGHT = 4;
+    public static readonly OUTPUT_IDX_BRAKE = 5;
 
-    private _output: number[] = new Array(4).fill(0);
+    public static readonly SENSOR_COUNT = 5;
+    public static readonly OUTPUT_COUNT = 6;
 
-    private _agent: Agent;
+    private _output: number[] = new Array(Brain.OUTPUT_COUNT).fill(0);
 
-    private _world: World;
+    private _action: number = -1;
 
-    private _sensors: Sensor[] = [];
+    public think(input: number[]): number[] {
+        this._output = this.thinkInternal(input);
 
-    public update(): void {
-        if (!this.agent) {
-            return;
+        if (this._output.reduce((acc, e) => acc + e, 0) === 0) {
+            this._action = -1;
+        }
+        else {
+            this._action = ExMath.argmax(this._output);
         }
 
-        const range = 400;
-
-        this._sensors = this.createSensors(range);
-        this.findIntersections(range);
-
-        this._output = this.think();
+        return this._output;
     }
 
-    public get agent(): Agent {
-        return this._agent;
+    public get output(): number[] {
+        return this._output;
     }
 
-    public set agent(agent: Agent) {
-        this._agent = agent;
+    public random(): void {
+        this._action = Math.floor(Math.random() * (Brain.OUTPUT_COUNT - 1));
     }
 
-    public get world(): World {
-        return this._world;
-    }
-
-    public set world(world: World) {
-        this._world = world;
-    }
-
-    protected get sensors(): Sensor[] {
-        return this._sensors;
-    }
-
-    protected decide(idx1: number, idx2: number): boolean {
-        return this._output[idx1] > this._output[idx2];
+    protected decide(...idx: number[]): boolean {
+        return idx.indexOf(this._action) >= 0;
     }
 
     public get accelerate(): boolean {
-        return this.decide(Brain.OUTPUT_IDX_ACCELERATE, Brain.OUTPUT_IDX_BRAKE);
+        return this.decide(Brain.OUTPUT_IDX_ACCELERATE, Brain.OUTPUT_IDX_ACCELERATE_LEFT, Brain.OUTPUT_IDX_ACCELERATE_RIGHT);
     }
 
     public get brake(): boolean {
-        return this.decide(Brain.OUTPUT_IDX_BRAKE, Brain.OUTPUT_IDX_ACCELERATE);
+        return this.decide(Brain.OUTPUT_IDX_BRAKE);
     }
 
     public get left(): boolean {
-        return this.decide(Brain.OUTPUT_IDX_LEFT, Brain.OUTPUT_IDX_RIGHT);
+        return this.decide(Brain.OUTPUT_IDX_LEFT, Brain.OUTPUT_IDX_ACCELERATE_LEFT);
     }
 
     public get right(): boolean {
-        return this.decide(Brain.OUTPUT_IDX_RIGHT, Brain.OUTPUT_IDX_LEFT);
+        return this.decide(Brain.OUTPUT_IDX_RIGHT, Brain.OUTPUT_IDX_ACCELERATE_RIGHT);
     }
 
-    protected abstract think(): number[];
+    protected abstract thinkInternal(input: number[]): number[];
 
-    private findIntersections(max: number): void {
-        const segments = this.world.getSegments(max);
+    public async abstract train(input: number[][], output: number[][]): Promise<void>;
 
-        for (const sensor of this._sensors) {
-            sensor.value = this.findIntersection(sensor, segments);
-        }
-    }
-
-    private findIntersection(sensor: Sensor, segments: Segment[]): number {
-        let result = 1;
-
-        for (let i = 0; i < segments.length - 1; i++) {
-            const end = this.agent.position.add(sensor.vector);
-
-            let intersect = ExMath.lineIntersection(
-                this.agent.position,
-                end,
-                segments[i].edge1,
-                segments[i + 1].edge1
-            );
-
-            if (intersect === false) {
-                intersect = ExMath.lineIntersection(
-                    this.agent.position,
-                    end,
-                    segments[i].edge2,
-                    segments[i + 1].edge2
-                );
-
-                if (intersect === false) {
-                    intersect = 1;
-                }
-            }
-
-            result = Math.min(result, <number>intersect);
-        }
-
-        return result;
-    }
-
-    private createSensors(length: number): Sensor[] {
-        const a = this.agent.angle;
-
-        return [
-            Vector.createFromRadial(a, length),
-            Vector.createFromRadial(a - Math.PI / 8, length / 2),
-            Vector.createFromRadial(a + Math.PI / 8, length / 2),
-            Vector.createFromRadial(a - Math.PI / 4, length / 4),
-            Vector.createFromRadial(a + Math.PI / 4, length / 4),
-        ].map(v => new Sensor(v));
-    }
-
-    public render(sketch: P5): void {
+    public render(agent: Agent, sketch: Sketch): void {
         const output = (decision: boolean, idx: number, x: number, y: number) => {
-            sketch.stroke(decision ? "#64dd17" : "#ff6d00");
-            sketch.line(0, 0, 100 * y, 100 * x);
+            sketch.p5.stroke(decision ? "#64dd17" : "#ff6d00");
+            sketch.p5.line(0, 0, 100 * y, 100 * x);
         };
 
-        sketch.strokeWeight(1);
+        sketch.p5.strokeWeight(1);
 
         output(this.accelerate, Brain.OUTPUT_IDX_ACCELERATE, 0, this._output[0]);
         output(this.brake, Brain.OUTPUT_IDX_BRAKE, 0, -this._output[1]);
         output(this.left, Brain.OUTPUT_IDX_LEFT, -this._output[2], 0);
         output(this.right, Brain.OUTPUT_IDX_RIGHT, this._output[3], 0);
-
-        sketch.push();
-        sketch.rotate(-this.agent.angle);
-
-        for (const sensor of this._sensors) {
-            sketch.strokeWeight(1);
-            sketch.stroke("#18ffff");
-            sketch.line(0, 0, sensor.vector.x, sensor.vector.y);
-
-            const v = sensor.vector.multiply(sensor.value);
-            sketch.strokeWeight(2);
-            sketch.stroke("#e040fb");
-            sketch.line(0, 0, v.x, v.y);
-        }
-
-        sketch.pop();
     }
 }
