@@ -1,0 +1,42 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+@gutter-weight: 5px;
+
+.ui {
+  width: 100%;
+  height: 100%;
+  display: grid;
+
+  grid-template-columns: 1fr @gutter-weight 1fr;
+  grid-template-rows: 1fr @gutter-weight 1fr;
+
+  > div {
+    overflow: hidden;
+  }
+
+  .gutter {
+    background: darkgray;
+
+    &.vertical {
+      grid-area: ~"1 / 2 / 4 / 2";
+
+      &:hover {
+        cursor: col-resize;
+      }
+    }
+
+    &.horizontal {
+      grid-area: ~"2 / 1 / 2 / 4";
+
+      &:hover {
+        cursor: row-resize;
+      }
+    }
+  }
+}

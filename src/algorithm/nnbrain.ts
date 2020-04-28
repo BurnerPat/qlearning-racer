@@ -1,6 +1,5 @@
-import Brain from "./brain";
-
 import * as tf from "@tensorflow/tfjs";
+import Brain, {LayerSummary} from "./brain";
 
 export default class NnBrain extends Brain {
     private model: tf.LayersModel;
@@ -13,16 +12,16 @@ export default class NnBrain extends Brain {
                 tf.layers.dense({
                     units: 10,
                     inputShape: [Brain.SENSOR_COUNT],
-                    activation: "linear"
+                    activation: "relu"
                 }),
-                tf.layers.dense({
-                    units: 10,
-                    activation: "linear"
-                }),
-                tf.layers.dense({
-                    units: 10,
-                    activation: "linear"
-                }),
+                /*tf.layers.dense({
+                 units: 10,
+                 activation: "relu"
+                 }),
+                 tf.layers.dense({
+                 units: 10,
+                 activation: "relu"
+                 }),*/
                 tf.layers.dense({
                     units: Brain.OUTPUT_COUNT,
                     activation: "linear"
@@ -36,6 +35,10 @@ export default class NnBrain extends Brain {
         });
     }
 
+    public async train(input: number[][], output: number[][]): Promise<void> {
+        await this.model.fit(tf.tensor2d(input), tf.tensor2d(output));
+    }
+
     protected thinkInternal(input: number[]): number[] {
         const output = tf.tidy(() => {
             const tensor = tf.tensor2d([input]);
@@ -45,7 +48,14 @@ export default class NnBrain extends Brain {
         return Array.from(output.dataSync());
     }
 
-    public async train(input: number[][], output: number[][]): Promise<void> {
-        await this.model.fit(tf.tensor2d(input), tf.tensor2d(output));
+    protected layerSummary(): LayerSummary[] {
+        return this.model.layers.map(e => {
+            const weight: tf.Tensor = e.getWeights()[0];
+
+            return ({
+                size: weight.shape[1],
+                weights: <number[][]>weight.arraySync()
+            });
+        });
     }
 }

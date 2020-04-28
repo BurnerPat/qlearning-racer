@@ -1,6 +1,15 @@
-import Agent from "../agent";
-import ExMath from "../exmath";
-import Sketch from "../sketch";
+import ExMath from "../ex-math";
+
+export interface LayerSummary {
+    size: number;
+    weights: number[][];
+}
+
+export interface Summary {
+    inputs: number[];
+    outputs: number[];
+    layers: LayerSummary[];
+}
 
 export default abstract class Brain {
     public static readonly OUTPUT_IDX_ACCELERATE = 0;
@@ -12,34 +21,13 @@ export default abstract class Brain {
 
     public static readonly SENSOR_COUNT = 5;
     public static readonly OUTPUT_COUNT = 6;
-
-    private _output: number[] = new Array(Brain.OUTPUT_COUNT).fill(0);
-
     private _action: number = -1;
 
-    public think(input: number[]): number[] {
-        this._output = this.thinkInternal(input);
-
-        if (this._output.reduce((acc, e) => acc + e, 0) === 0) {
-            this._action = -1;
-        }
-        else {
-            this._action = ExMath.argmax(this._output);
-        }
-
-        return this._output;
-    }
+    private _input: number[] = [];
+    private _output: number[] = new Array(Brain.OUTPUT_COUNT).fill(0);
 
     public get output(): number[] {
         return this._output;
-    }
-
-    public random(): void {
-        this._action = Math.floor(Math.random() * (Brain.OUTPUT_COUNT - 1));
-    }
-
-    protected decide(...idx: number[]): boolean {
-        return idx.indexOf(this._action) >= 0;
     }
 
     public get accelerate(): boolean {
@@ -58,24 +46,39 @@ export default abstract class Brain {
         return this.decide(Brain.OUTPUT_IDX_RIGHT, Brain.OUTPUT_IDX_ACCELERATE_RIGHT);
     }
 
-    protected abstract thinkInternal(input: number[]): number[];
+    public think(input: number[]): number[] {
+        this._output = this.thinkInternal(input);
+
+        if (this._output.reduce((acc, e) => acc + e, 0) === 0) {
+            this._action = -1;
+        }
+        else {
+            this._action = ExMath.argmax(this._output);
+        }
+
+        this._input = input;
+        return this._output;
+    }
+
+    public random(): void {
+        this._action = Math.floor(Math.random() * (Brain.OUTPUT_COUNT - 1));
+    }
 
     public async abstract train(input: number[][], output: number[][]): Promise<void>;
 
-    public render(agent: Agent, sketch: Sketch): void {
-        const output = this._output;
-        const max = Math.max(...output) || 1;
-
-        const draw = (decision: boolean, idx: number, x: number, y: number) => {
-            sketch.p5.stroke(decision ? "#64dd17" : "#ff6d00");
-            sketch.p5.line(0, 0, 100 * (y / max), 100 * (x / max));
+    public summary(): Summary {
+        return {
+            inputs: this._input,
+            outputs: this._output,
+            layers: this.layerSummary()
         };
-
-        sketch.p5.strokeWeight(1);
-
-        draw(this.accelerate, Brain.OUTPUT_IDX_ACCELERATE, 0, output[0]);
-        draw(this.brake, Brain.OUTPUT_IDX_BRAKE, 0, -output[1]);
-        draw(this.left, Brain.OUTPUT_IDX_LEFT, -output[2], 0);
-        draw(this.right, Brain.OUTPUT_IDX_RIGHT, output[3], 0);
     }
+
+    protected decide(...idx: number[]): boolean {
+        return idx.indexOf(this._action) >= 0;
+    }
+
+    protected abstract thinkInternal(input: number[]): number[];
+
+    protected abstract layerSummary(): LayerSummary[];
 }

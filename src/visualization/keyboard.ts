@@ -20,4 +20,8 @@ export default class Keyboard {
     public get downArrow() {
         return this.p5.keyIsDown(this.p5.DOWN_ARROW);
     }
+
+    public get backspace() {
+        return this.p5.keyIsDown(this.p5.BACKSPACE);
+    }
 }

@@ -1,11 +1,13 @@
-import Brain from "./brain";
-
-import * as P5 from "p5";
-import Keyboard from "../keyboard";
+import Keyboard from "../visualization/keyboard";
+import Brain, {LayerSummary} from "./brain";
 
 export default class ControlBrain extends Brain {
     constructor(private readonly keyboard: Keyboard) {
         super();
+    }
+
+    public async train(input: number[][], output: number[][]): Promise<void> {
+        // stupid brain ain't gonna learn
     }
 
     protected thinkInternal(): number[] {
@@ -17,7 +19,7 @@ export default class ControlBrain extends Brain {
         return [up, up && left, up && right, !up && left, !up && right, down].map(e => e ? 1 : 0);
     }
 
-    public async train(input: number[][], output: number[][]): Promise<void> {
-        // stupid brain ain't gonna learn
+    protected layerSummary(): LayerSummary[] {
+        return [];
     }
 }

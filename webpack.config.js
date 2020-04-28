@@ -10,8 +10,7 @@ module.exports = {
     plugins: [
         new CleanPlugin.CleanWebpackPlugin(),
         new HtmlPlugin({
-            title: "QLearning Racer",
-            template: "./src/assets/index.html"
+            title: "QLearning Racer"
         }),
         new CopyPlugin([
             {
@@ -30,6 +29,14 @@ module.exports = {
             {
                 test: /\.svg$/,
                 use: "raw-loader"
+            },
+            {
+                test: /\.less$/,
+                use: [
+                    "style-loader",
+                    "css-loader",
+                    "less-loader"
+                ]
             }
         ]
     },

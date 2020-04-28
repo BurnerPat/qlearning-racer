@@ -1,6 +1,6 @@
+import ExArray from "../ex-array";
+import ExMath from "../ex-math";
 import Brain from "./brain";
-import ExArray from "../exarray";
-import ExMath from "../exmath";
 
 /*
  * Q-table is <s, a, r, ss>
@@ -73,9 +73,10 @@ export default class QLearning {
             const q = brain.think(sample.s);
             const qq = brain.think(sample.ss);
 
-            const t = sample.r + this.config.futureRewardDiscountFactor * Math.max(...qq);
+            const a = ExMath.argmax(qq);
+            const t = sample.r + this.config.futureRewardDiscountFactor * qq[a];
 
-            q[sample.a] = t;
+            q[a] = t;
 
             input.push(sample.s);
             output.push(q);

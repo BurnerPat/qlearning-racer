@@ -1,17 +1,13 @@
-import Vector from "./vector";
-import Sketch from "./sketch";
-import World, {Segment} from "./world";
-import ExMath from "./exmath";
 import Brain from "./algorithm/brain";
+import ExMath from "./ex-math";
+import Vector from "./vector";
+import World, {Segment} from "./world";
 
 export interface AgentConfig {
     acceleration: number;
     steer: number;
     brake: number;
     friction: number;
-
-    width: number;
-    height: number;
 }
 
 class Sensor {
@@ -41,10 +37,18 @@ export default class Agent {
 
     public brake: boolean = false;
 
-    private _state: Sensor[] = [];
-
     public constructor(private readonly config: AgentConfig) {
         // Empty
+    }
+
+    private _sensors: Sensor[] = [];
+
+    public get sensors(): Sensor[] {
+        return this._sensors;
+    }
+
+    public get state(): number[] {
+        return this._sensors.map(e => e.value);
     }
 
     public update(): void {
@@ -71,21 +75,25 @@ export default class Agent {
         this.right = brain.right;
     }
 
-    public get state(): number[] {
-        return this._state.map(e => e.value);
-    }
-
     public observe(world: World): void {
         const range = 400;
 
-        this._state = this.createSensors(range);
+        this._sensors = this.createSensors(range);
         this.findIntersections(world, range);
+    }
+
+    public reset(): void {
+        this.angle = 0;
+        this.steer = 0;
+
+        this.movement = new Vector();
+        this.force = new Vector();
     }
 
     private findIntersections(world: World, max: number): void {
         const segments = world.getSegments(max);
 
-        for (const sensor of this._state) {
+        for (const sensor of this._sensors) {
             sensor.value = this.findIntersection(sensor, segments);
         }
     }
@@ -127,66 +135,10 @@ export default class Agent {
 
         return [
             Vector.createFromRadial(a, length),
-            Vector.createFromRadial(a - Math.PI / 8, length / 2),
-            Vector.createFromRadial(a + Math.PI / 8, length / 2),
-            Vector.createFromRadial(a - Math.PI / 4, length / 4),
-            Vector.createFromRadial(a + Math.PI / 4, length / 4),
+            Vector.createFromRadial(a - Math.PI / 8, length),
+            Vector.createFromRadial(a + Math.PI / 8, length),
+            Vector.createFromRadial(a - Math.PI / 4, length),
+            Vector.createFromRadial(a + Math.PI / 4, length)
         ].map(v => new Sensor(v));
-    }
-
-    public reset(): void {
-        this.angle = 0;
-        this.steer = 0;
-
-        this.movement = new Vector();
-        this.force = new Vector();
-    }
-
-    public render(sketch: Sketch): void {
-        sketch.p5.rotate(this.angle);
-
-        const size = new Vector(this.config.height, this.config.width);
-        const wheelSize = size.divide(5);
-
-        const offset = size.divide(-2);
-        const wheelOffset = wheelSize.divide(-2);
-
-        sketch.p5.noStroke();
-
-        sketch.p5.fill("#37474f");
-
-        const wheel = (x: number, y: number, rotation: number) => {
-            sketch.p5.push();
-
-            sketch.p5.translate(x, y);
-            sketch.p5.rotate(rotation);
-            sketch.rect(wheelOffset, wheelSize);
-
-            sketch.p5.pop();
-        };
-
-        wheel(-offset.x, offset.y, this.steer * 5);
-        wheel(-offset.x, -offset.y, this.steer * 5);
-
-        wheel(offset.x, offset.y, 0);
-        wheel(offset.x, -offset.y, 0);
-
-        sketch.p5.fill("#d50000");
-        sketch.rect(offset, size);
-
-        sketch.p5.push();
-        sketch.p5.rotate(-this.angle);
-
-        for (const sensor of this._state) {
-            sketch.p5.strokeWeight(1);
-            sketch.p5.stroke("#18ffff");
-            sketch.line(Vector.NULL, sensor.vector);
-
-            sketch.p5.strokeWeight(2);
-            sketch.p5.stroke("#e040fb");
-            sketch.line(Vector.NULL, sensor.vector.multiply(sensor.value));
-        }
-
-        sketch.p5.pop();
     }
 }

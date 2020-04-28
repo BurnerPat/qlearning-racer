@@ -9,6 +9,26 @@ export default class Vector {
         this.y = y;
     }
 
+    public get angle(): number {
+        return Math.atan2(this.y, this.x);
+    }
+
+    public get lengthSquared(): number {
+        return this.x * this.x + this.y * this.y;
+    }
+
+    public get length(): number {
+        return Math.sqrt(this.lengthSquared);
+    }
+
+    public static createFromRadial(angle: number, length: number): Vector {
+        return new Vector(Math.cos(angle) * length, Math.sin(angle) * length);
+    }
+
+    public static random(range: Vector): Vector {
+        return new Vector(Math.random() * range.x, Math.random() * range.y);
+    }
+
     public add(other: Vector): Vector {
         return new Vector(this.x + other.x, this.y + other.y);
     }
@@ -41,18 +61,6 @@ export default class Vector {
         return Math.sqrt(this.distanceSquared(other));
     }
 
-    public get angle(): number {
-        return Math.atan2(this.y, this.x);
-    }
-
-    public get lengthSquared(): number {
-        return this.x * this.x + this.y * this.y;
-    }
-
-    public get length(): number {
-        return Math.sqrt(this.lengthSquared);
-    }
-
     public resize(length: number): Vector {
         return this.divide(this.length).multiply(length);
     }
@@ -82,13 +90,5 @@ export default class Vector {
 
     public rotateTo(angle: number): Vector {
         return Vector.createFromRadial(angle, this.length);
-    }
-
-    public static createFromRadial(angle: number, length: number): Vector {
-        return new Vector(Math.cos(angle) * length, Math.sin(angle) * length);
-    }
-
-    public static random(range: Vector): Vector {
-        return new Vector(Math.random() * range.x, Math.random() * range.y);
     }
 }

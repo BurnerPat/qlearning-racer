@@ -1,13 +1,13 @@
-import World from "./world";
 import Agent from "./agent";
-import Config from "./config";
 
 import Brain from "./algorithm/brain";
 import ControlBrain from "./algorithm/controlbrain";
-import Application from "./application";
 import NnBrain from "./algorithm/nnbrain";
 import QLearning from "./algorithm/qlearning";
-import ExMath from "./exmath";
+import Application from "./application";
+import Config from "./config";
+import ExMath from "./ex-math";
+import World from "./world";
 
 export interface SimulationConfig {
     tickRate: number;
