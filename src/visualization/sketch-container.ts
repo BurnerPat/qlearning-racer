@@ -2,6 +2,7 @@ import * as P5 from "p5";
 import Vector from "../vector";
 import Keyboard from "./keyboard";
 import {Container} from "./ui";
+import Visualizer from "./visualizer";
 
 export class Sketch {
     public constructor(public readonly p5: P5) {
@@ -25,7 +26,9 @@ export class Sketch {
     }
 }
 
-export default abstract class SketchContainer {
+export default abstract class SketchContainer implements Visualizer {
+    private _p5: P5;
+
     protected constructor(width: number, height: number, private readonly scale: boolean, private readonly container: Container) {
         this._height = height;
         this._width = width;
@@ -73,13 +76,17 @@ export default abstract class SketchContainer {
             };
         };
 
-        const p5 = new P5(callback, this.container.element);
+        this._p5 = new P5(callback, this.container.element);
 
         this.container.resize = (width: number, height: number): void => {
-            p5.resizeCanvas(width, height);
+            this._p5.resizeCanvas(width, height);
         };
 
-        this._keyboard = new Keyboard(p5);
+        this._keyboard = new Keyboard(this._p5);
+    }
+
+    public update(): void {
+        this._p5.redraw();
     }
 
     protected abstract render(sketch: Sketch): void;

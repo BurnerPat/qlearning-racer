@@ -1,5 +1,6 @@
-import Brain, {Summary} from "../algorithm/brain";
+import {Summary} from "../algorithm/brain";
 import ExMath from "../ex-math";
+import Simulation from "../simulation";
 import SketchContainer, {Sketch} from "./sketch-container";
 import {Container} from "./ui";
 
@@ -19,12 +20,14 @@ class Layer {
 }
 
 export default class Network extends SketchContainer {
-    public constructor(private readonly brain: Brain, container: Container) {
+    public constructor(private readonly simulation: Simulation, container: Container) {
         super(100, 50, false, container);
     }
 
     protected render(sketch: Sketch): void {
-        const summary: Summary = this.brain.summary();
+        const brain = this.simulation.brain;
+
+        const summary: Summary = brain.summary();
         const layers = this.buildLayers(summary);
 
         sketch.p5.background("#ffffff");
@@ -63,9 +66,11 @@ export default class Network extends SketchContainer {
 
         const maxO = ExMath.argmax(summary.outputs);
 
-        for (let i = 0; i < summary.inputs.length; i++) {
+        const inputs = this.simulation.agent.state;
+
+        for (let i = 0; i < inputs.length; i++) {
             const node = layers[0].nodes[i];
-            sketch.p5.circle(node.x, node.y, this.height / maxNodes / 2 * summary.inputs[i]);
+            sketch.p5.circle(node.x, node.y, this.height / maxNodes / 2 * inputs[i]);
         }
 
         const out = layers[layers.length - 1].nodes[maxO];

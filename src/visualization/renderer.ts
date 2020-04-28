@@ -9,7 +9,7 @@ import {Container} from "./ui";
 export interface RendererConfig {
     agentWidth: number;
     agentHeight: number;
-    sensorLength: number;
+    outputLength: number;
 }
 
 export default class Renderer extends SketchContainer {
@@ -96,7 +96,7 @@ export default class Renderer extends SketchContainer {
 
             sketch.p5.strokeWeight(2);
             sketch.p5.stroke("#e040fb");
-            sketch.line(Vector.NULL, sensor.vector.multiply(sensor.value));
+            sketch.line(Vector.NULL, sensor.vector.multiply(1 - sensor.value));
         }
 
         sketch.p5.pop();
@@ -108,7 +108,7 @@ export default class Renderer extends SketchContainer {
 
         const draw = (decision: boolean, idx: number, x: number, y: number) => {
             sketch.p5.stroke(decision ? "#64dd17" : "#ff6d00");
-            sketch.p5.line(0, 0, this.config.sensorLength * (output[idx] * y / max), this.config.sensorLength * (output[idx] * x / max));
+            sketch.p5.line(0, 0, this.config.outputLength * (output[idx] * y / max), this.config.outputLength * (output[idx] * x / max));
         };
 
         sketch.p5.strokeWeight(1);

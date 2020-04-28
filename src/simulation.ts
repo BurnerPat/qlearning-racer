@@ -61,10 +61,13 @@ export default class Simulation {
         this.agent.observe(this.world);
 
         this.learning.observe(state, ExMath.argmax(this.brain.output), this.world.progress, this.agent.state, this.world.terminal);
-        await this.learning.train(this.brain);
 
         if (this.world.terminal) {
             this.reset();
         }
+    }
+
+    public async train(): Promise<void> {
+        await this.learning.train(this.brain);
     }
 }

@@ -6,7 +6,8 @@ const application = new Application(document.body, {
         acceleration: 0.5,
         brake: 0.75,
         steer: 0.1,
-        friction: 0.95
+        friction: 0.95,
+        sensorRange: 200
     },
 
     world: {
@@ -25,18 +26,18 @@ const application = new Application(document.body, {
         explorationProbability: 0.2,
         replayBatchSize: 10,
         replayMemorySize: 1000,
-        futureRewardDiscountFactor: 0.25,
+        futureRewardDiscountFactor: 0.75,
 
-        terminalStatePenalty: -1000,
-        backwardProgressPenalty: -1,
+        terminalStatePenalty: -9999,
+        backwardProgressPenalty: 0,
         noProgressPenalty: 0,
-        progressReward: 100
+        progressReward: 10
     },
 
     renderer: {
         agentWidth: 15,
         agentHeight: 30,
-        sensorLength: 50
+        outputLength: 100
     }
 });
 

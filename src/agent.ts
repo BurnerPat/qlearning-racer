@@ -8,6 +8,7 @@ export interface AgentConfig {
     steer: number;
     brake: number;
     friction: number;
+    sensorRange: number;
 }
 
 class Sensor {
@@ -76,7 +77,7 @@ export default class Agent {
     }
 
     public observe(world: World): void {
-        const range = 400;
+        const range = this.config.sensorRange;
 
         this._sensors = this.createSensors(range);
         this.findIntersections(world, range);
@@ -127,17 +128,17 @@ export default class Agent {
             result = Math.min(result, <number>intersect);
         }
 
-        return result;
+        return 1 - result;
     }
 
     private createSensors(length: number): Sensor[] {
         const a = this.angle;
 
         return [
-            Vector.createFromRadial(a, length),
-            Vector.createFromRadial(a - Math.PI / 8, length),
-            Vector.createFromRadial(a + Math.PI / 8, length),
             Vector.createFromRadial(a - Math.PI / 4, length),
+            Vector.createFromRadial(a - Math.PI / 8, length),
+            Vector.createFromRadial(a, length),
+            Vector.createFromRadial(a + Math.PI / 8, length),
             Vector.createFromRadial(a + Math.PI / 4, length)
         ].map(v => new Sensor(v));
     }

@@ -4,11 +4,14 @@ import Keyboard from "./visualization/keyboard";
 import Network from "./visualization/network";
 import Renderer from "./visualization/renderer";
 import UI from "./visualization/ui";
+import Visualizer from "./visualization/visualizer";
 
 export default class Application {
     private readonly simulation: Simulation;
 
     private readonly ui: UI;
+
+    private readonly visualizers: Visualizer[] = [];
 
     public constructor(container: HTMLElement, private readonly config: Config) {
         this.ui = new UI(container);
@@ -25,11 +28,11 @@ export default class Application {
         this.simulation.initialize(this);
         this.ui.initialize();
 
-        const renderer = new Renderer(this.config.renderer, this.simulation, this.ui.renderContainer);
-        renderer.setup();
+        const renderer: Renderer = new Renderer(this.config.renderer, this.simulation, this.ui.renderContainer);
+        this.visualizers.push(renderer);
+        this.visualizers.push(new Network(this.simulation, this.ui.networkContainer));
 
-        const network = new Network(this.simulation.brain, this.ui.networkContainer);
-        network.setup();
+        this.visualizers.forEach(e => e.setup());
 
         this._keyboard = renderer.keyboard;
 
@@ -40,9 +43,9 @@ export default class Application {
         const timeout = 1000 / this.config.simulation.tickRate;
 
         const callback = async () => {
-            if (!this._keyboard.backspace) {
-                await this.simulation.step();
-            }
+            await this.simulation.step();
+            this.visualizers.forEach(e => e.update());
+            await this.simulation.train();
 
             window.setTimeout(callback, timeout);
         };

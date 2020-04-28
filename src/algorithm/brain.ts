@@ -13,14 +13,13 @@ export interface Summary {
 
 export default abstract class Brain {
     public static readonly OUTPUT_IDX_ACCELERATE = 0;
-    public static readonly OUTPUT_IDX_ACCELERATE_LEFT = 1;
-    public static readonly OUTPUT_IDX_ACCELERATE_RIGHT = 2;
-    public static readonly OUTPUT_IDX_LEFT = 3;
-    public static readonly OUTPUT_IDX_RIGHT = 4;
-    public static readonly OUTPUT_IDX_BRAKE = 5;
+    public static readonly OUTPUT_IDX_LEFT = 1;
+    public static readonly OUTPUT_IDX_RIGHT = 2;
+    public static readonly OUTPUT_IDX_BRAKE = 3;
 
     public static readonly SENSOR_COUNT = 5;
-    public static readonly OUTPUT_COUNT = 6;
+    public static readonly OUTPUT_COUNT = 4;
+
     private _action: number = -1;
 
     private _input: number[] = [];
@@ -31,7 +30,7 @@ export default abstract class Brain {
     }
 
     public get accelerate(): boolean {
-        return this.decide(Brain.OUTPUT_IDX_ACCELERATE, Brain.OUTPUT_IDX_ACCELERATE_LEFT, Brain.OUTPUT_IDX_ACCELERATE_RIGHT);
+        return this.decide(Brain.OUTPUT_IDX_ACCELERATE);
     }
 
     public get brake(): boolean {
@@ -39,11 +38,11 @@ export default abstract class Brain {
     }
 
     public get left(): boolean {
-        return this.decide(Brain.OUTPUT_IDX_LEFT, Brain.OUTPUT_IDX_ACCELERATE_LEFT);
+        return this.decide(Brain.OUTPUT_IDX_LEFT);
     }
 
     public get right(): boolean {
-        return this.decide(Brain.OUTPUT_IDX_RIGHT, Brain.OUTPUT_IDX_ACCELERATE_RIGHT);
+        return this.decide(Brain.OUTPUT_IDX_RIGHT);
     }
 
     public think(input: number[]): number[] {
