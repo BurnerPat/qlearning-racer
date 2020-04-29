@@ -10,12 +10,7 @@ export default class NnBrain extends Brain {
         this.model = tf.sequential({
             layers: [
                 tf.layers.dense({
-                    units: 5,
-                    inputShape: [Brain.SENSOR_COUNT],
-                    activation: "linear"
-                }),
-                tf.layers.dense({
-                    units: 5,
+                    units: 10,
                     inputShape: [Brain.SENSOR_COUNT],
                     activation: "linear"
                 }),

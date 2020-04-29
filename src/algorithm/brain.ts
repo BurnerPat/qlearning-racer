@@ -19,10 +19,14 @@ export default abstract class Brain {
 
     public static readonly SENSOR_COUNT = 5;
     public static readonly OUTPUT_COUNT = 4;
+    private _input: number[] = [];
 
     private _action: number = -1;
 
-    private _input: number[] = [];
+    public get action(): number {
+        return this._action;
+    }
+
     private _output: number[] = new Array(Brain.OUTPUT_COUNT).fill(0);
 
     public get output(): number[] {

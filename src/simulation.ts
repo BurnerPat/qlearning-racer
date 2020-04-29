@@ -6,7 +6,6 @@ import NnBrain from "./algorithm/nnbrain";
 import QLearning from "./algorithm/qlearning";
 import Application from "./application";
 import Config from "./config";
-import ExMath from "./ex-math";
 import World from "./world";
 
 export interface SimulationConfig {
@@ -60,7 +59,7 @@ export default class Simulation {
 
         this.agent.observe(this.world);
 
-        this.learning.observe(state, ExMath.argmax(this.brain.output), this.world.progress, this.agent.state, this.world.terminal);
+        this.learning.observe(state, this.brain.action, this.world.progress, this.agent.state, this.world.terminal);
 
         if (this.world.terminal) {
             this.reset();

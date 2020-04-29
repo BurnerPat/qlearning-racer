@@ -26,11 +26,11 @@ const application = new Application(document.body, {
         explorationProbability: 0.2,
         replayBatchSize: 10,
         replayMemorySize: 1000,
-        futureRewardDiscountFactor: 0.75,
+        futureRewardDiscountFactor: 0.95,
 
         terminalStatePenalty: -9999,
         backwardProgressPenalty: 0,
-        noProgressPenalty: 0,
+        noProgressPenalty: -0.01,
         progressReward: 10
     },
 

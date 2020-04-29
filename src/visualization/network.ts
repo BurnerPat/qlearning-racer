@@ -61,21 +61,6 @@ export default class Network extends SketchContainer {
             }
         }
 
-        sketch.p5.fill("#00ff00");
-        sketch.p5.noStroke();
-
-        const maxO = ExMath.argmax(summary.outputs);
-
-        const inputs = this.simulation.agent.state;
-
-        for (let i = 0; i < inputs.length; i++) {
-            const node = layers[0].nodes[i];
-            sketch.p5.circle(node.x, node.y, this.height / maxNodes / 2 * inputs[i]);
-        }
-
-        const out = layers[layers.length - 1].nodes[maxO];
-        sketch.p5.circle(out.x, out.y, this.height / maxNodes / 2);
-
         for (const l of layers) {
             for (const n of l.nodes) {
                 for (const i of n.incoming) {
@@ -84,6 +69,45 @@ export default class Network extends SketchContainer {
                     sketch.p5.line(i.node.x, i.node.y, n.x, n.y);
                 }
             }
+        }
+
+        sketch.p5.noStroke();
+
+        const outputs = summary.outputs;
+        const inputs = this.simulation.agent.state;
+
+        const maxO = ExMath.argmax(outputs);
+
+        for (let i = 0; i < inputs.length; i++) {
+            const node = layers[0].nodes[i];
+
+            if (!node) {
+                continue;
+            }
+
+            sketch.p5.fill("#00ff00");
+            sketch.p5.circle(node.x, node.y, this.height / maxNodes / 2 * inputs[i]);
+
+            sketch.p5.fill("#000000");
+            sketch.p5.text(inputs[i].toFixed(5), node.x - dX / 4, node.y);
+        }
+
+        const minOut = Math.min(...outputs);
+        const maxOut = Math.max(...outputs);
+        const diffOut = maxOut - minOut;
+
+        for (let i = 0; i < outputs.length; i++) {
+            const node = layers[layers.length - 1].nodes[i];
+
+            if (!node) {
+                continue;
+            }
+
+            sketch.p5.fill("#00ff00");
+            sketch.p5.circle(node.x, node.y, this.height / maxNodes / 2 * (outputs[i] - minOut) / diffOut);
+
+            sketch.p5.fill("#000000");
+            sketch.p5.text(outputs[i].toFixed(5), node.x + dX / 8, node.y);
         }
     }
 
